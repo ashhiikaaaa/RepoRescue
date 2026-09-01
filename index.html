@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RepoRescue agentic repository investigation dashboard prototype">
+  <title>RepoRescue Dashboard Prototype</title>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+  <style>
+    html { color-scheme: light dark; background: light-dark(#f3f6f8, #08100f); }
+    body { margin: 0; padding: 16px; }
+  </style>
+</head>
+<body>
+<div id="repo-rescue-prototype">
+  <style>
+    #repo-rescue-prototype {
+      color-scheme: light dark;
+      --rr-bg: light-dark(#f3f6f8, #08100f);
+      --rr-shell: light-dark(#ffffff, #0d1715);
+      --rr-panel: light-dark(#ffffff, #111d1a);
+      --rr-panel-2: light-dark(#f7faf9, #14231f);
+      --rr-text: light-dark(#17211f, #eef7f4);
+      --rr-muted: light-dark(#687572, #91a49f);
+      --rr-line: light-dark(#dfe7e4, #263a35);
+      --rr-green: light-dark(#147a5b, #59d7a8);
+      --rr-green-soft: light-dark(#e6f5ef, #12362b);
+      --rr-amber: light-dark(#9a5b09, #f1b95f);
+      --rr-amber-soft: light-dark(#fff3df, #382a16);
+      --rr-red: light-dark(#a33b37, #f18c84);
+      --rr-red-soft: light-dark(#fdeceb, #3d201f);
+      --rr-blue: light-dark(#3765a4, #85b2f3);
+      --rr-purple: light-dark(#7357a6, #c1a6f0);
+      color: var(--rr-text);
+      background: transparent;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    #repo-rescue-prototype * { box-sizing: border-box; }
+    #repo-rescue-prototype button,
+    #repo-rescue-prototype input { font: inherit; }
+    #repo-rescue-prototype button { cursor: pointer; }
+    #repo-rescue-prototype code { font-family: "SFMono-Regular", Consolas, monospace; }
+    #repo-rescue-prototype .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    #repo-rescue-prototype .rr-app {
+      min-height: 760px;
+      overflow: hidden;
+      border: 1px solid var(--rr-line);
+      border-radius: 18px;
+      background: var(--rr-bg);
+      box-shadow: 0 18px 50px light-dark(rgba(27, 49, 42, .08), rgba(0, 0, 0, .28));
+    }
+
+    #repo-rescue-prototype .rr-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 64px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--rr-line);
+      background: var(--rr-shell);
+    }
+
+    #repo-rescue-prototype .rr-brand,
+    #repo-rescue-prototype .rr-brand-mark,
+    #repo-rescue-prototype .rr-top-actions,
+    #repo-rescue-prototype .rr-repo-line,
+    #repo-rescue-prototype .rr-status,
+    #repo-rescue-prototype .rr-btn,
+    #repo-rescue-prototype .rr-chip,
+    #repo-rescue-prototype .rr-nav-button,
+    #repo-rescue-prototype .rr-finding-head,
+    #repo-rescue-prototype .rr-evidence-row,
+    #repo-rescue-prototype .rr-modal-title,
+    #repo-rescue-prototype .rr-agent-line {
+      display: flex;
+      align-items: center;
+    }
+
+    #repo-rescue-prototype .rr-brand { gap: 10px; font-weight: 700; letter-spacing: -.02em; }
+    #repo-rescue-prototype .rr-brand-mark {
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      color: #fff;
+      background: #15765b;
+    }
+    #repo-rescue-prototype .rr-brand-mark svg { width: 17px; height: 17px; }
+    #repo-rescue-prototype .rr-top-actions { gap: 9px; }
+
+    #repo-rescue-prototype .rr-chip {
+      gap: 6px;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--rr-line);
+      border-radius: 999px;
+      color: var(--rr-muted);
+      background: var(--rr-panel-2);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    #repo-rescue-prototype .rr-chip svg { width: 13px; height: 13px; }
+    #repo-rescue-prototype .rr-chip.live { color: var(--rr-green); background: var(--rr-green-soft); border-color: transparent; }
+    #repo-rescue-prototype .rr-live-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    #repo-rescue-prototype .rr-hidden { display: none !important; }
+    #repo-rescue-prototype .rr-home {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr);
+      align-items: center;
+      gap: 54px;
+      min-height: 694px;
+      padding: 64px clamp(28px, 7vw, 86px);
+      background:
+        radial-gradient(circle at 18% 28%, light-dark(rgba(21,118,91,.08), rgba(89,215,168,.07)), transparent 34%),
+        var(--rr-bg);
+    }
+    #repo-rescue-prototype .rr-home-copy { max-width: 650px; }
+    #repo-rescue-prototype .rr-home-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 25px;
+      padding: 8px 12px;
+      border: 1px solid light-dark(rgba(20,122,91,.25), rgba(89,215,168,.25));
+      border-radius: 999px;
+      color: var(--rr-green);
+      background: var(--rr-green-soft);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    #repo-rescue-prototype .rr-home-kicker::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; content: ""; }
+    #repo-rescue-prototype .rr-home-title { max-width: 650px; font-size: clamp(48px, 6vw, 78px); line-height: .98; letter-spacing: -.065em; }
+    #repo-rescue-prototype .rr-home-title span { display: block; color: var(--rr-green); }
+    #repo-rescue-prototype .rr-home-description { max-width: 590px; margin-top: 28px; color: var(--rr-muted); font-size: 16px; line-height: 1.75; }
+    #repo-rescue-prototype .rr-home-points { display: flex; flex-wrap: wrap; gap: 9px 18px; margin-top: 27px; color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-home-point { display: flex; align-items: center; gap: 7px; }
+    #repo-rescue-prototype .rr-home-point svg { width: 13px; height: 13px; color: var(--rr-green); }
+    #repo-rescue-prototype .rr-home-card {
+      overflow: hidden;
+      border: 1px solid #31403c;
+      border-radius: 17px;
+      color: #f3f7f6;
+      background: #172320;
+      box-shadow: 0 22px 55px rgba(0,0,0,.22);
+    }
+    #repo-rescue-prototype .rr-home-card-head { padding: 27px 28px 20px; }
+    #repo-rescue-prototype .rr-home-card-label { color: #93a49f; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    #repo-rescue-prototype .rr-home-card h2 { margin-top: 9px; font-size: 22px; }
+    #repo-rescue-prototype .rr-home-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 0 28px; padding: 5px; border-radius: 10px; background: #26332f; }
+    #repo-rescue-prototype .rr-home-tab { min-height: 42px; border: 0; border-radius: 7px; color: #9daaa6; background: transparent; font-weight: 700; }
+    #repo-rescue-prototype .rr-home-tab.active { color: #14201d; background: #f2b832; }
+    #repo-rescue-prototype .rr-home-panel { min-height: 178px; padding: 26px 28px 29px; }
+    #repo-rescue-prototype .rr-home-panel p { color: #9daaa6; font-size: 12px; line-height: 1.6; }
+    #repo-rescue-prototype .rr-home-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      min-height: 50px;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 9px;
+      color: #14201d;
+      background: #f2b832;
+      font-weight: 750;
+    }
+    #repo-rescue-prototype .rr-home-action:hover { background: #ffc84e; }
+    #repo-rescue-prototype .rr-home-action svg { width: 16px; height: 16px; }
+    #repo-rescue-prototype .rr-home-url { width: 100%; min-height: 46px; margin-top: 16px; padding: 0 12px; border: 1px solid #3a4945; border-radius: 8px; outline: none; color: #f3f7f6; background: #202d29; }
+    #repo-rescue-prototype .rr-home-url:focus { border-color: #59d7a8; }
+
+    #repo-rescue-prototype .rr-body { display: grid; grid-template-columns: 210px minmax(0, 1fr); }
+    #repo-rescue-prototype .rr-sidebar {
+      padding: 20px 14px;
+      border-right: 1px solid var(--rr-line);
+      background: var(--rr-shell);
+    }
+    #repo-rescue-prototype .rr-repo-mini { padding: 0 8px 18px; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-repo-line { gap: 9px; min-width: 0; }
+    #repo-rescue-prototype .rr-repo-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      color: var(--rr-green);
+      background: var(--rr-green-soft);
+    }
+    #repo-rescue-prototype .rr-repo-icon svg { width: 17px; height: 17px; }
+    #repo-rescue-prototype .rr-repo-copy { min-width: 0; }
+    #repo-rescue-prototype .rr-repo-name { overflow: hidden; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    #repo-rescue-prototype .rr-repo-meta { margin-top: 2px; color: var(--rr-muted); font-size: 11px; }
+
+    #repo-rescue-prototype .rr-nav { display: grid; gap: 4px; margin-top: 18px; }
+    #repo-rescue-prototype .rr-nav-label { padding: 0 10px 7px; color: var(--rr-muted); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    #repo-rescue-prototype .rr-nav-button {
+      gap: 10px;
+      width: 100%;
+      min-height: 40px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 9px;
+      color: var(--rr-muted);
+      background: transparent;
+      text-align: left;
+    }
+    #repo-rescue-prototype .rr-nav-button svg { width: 16px; height: 16px; }
+    #repo-rescue-prototype .rr-nav-button:hover { color: var(--rr-text); background: var(--rr-panel-2); }
+    #repo-rescue-prototype .rr-nav-button.active { color: var(--rr-green); background: var(--rr-green-soft); font-weight: 650; }
+    #repo-rescue-prototype .rr-nav-spacer { height: 12px; }
+
+    #repo-rescue-prototype .rr-main { min-width: 0; padding: 24px; }
+    #repo-rescue-prototype .rr-page { display: none; }
+    #repo-rescue-prototype .rr-page.active { display: block; }
+    #repo-rescue-prototype .rr-page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+    #repo-rescue-prototype h1,
+    #repo-rescue-prototype h2,
+    #repo-rescue-prototype h3,
+    #repo-rescue-prototype p { margin: 0; }
+    #repo-rescue-prototype h1 { font-size: 24px; line-height: 1.25; letter-spacing: -.025em; }
+    #repo-rescue-prototype h2 { font-size: 16px; line-height: 1.3; }
+    #repo-rescue-prototype h3 { font-size: 14px; line-height: 1.35; }
+    #repo-rescue-prototype .rr-subtitle { margin-top: 6px; color: var(--rr-muted); font-size: 13px; }
+
+    #repo-rescue-prototype .rr-btn {
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid var(--rr-line);
+      border-radius: 9px;
+      color: var(--rr-text);
+      background: var(--rr-panel);
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    #repo-rescue-prototype .rr-btn svg { width: 15px; height: 15px; }
+    #repo-rescue-prototype .rr-btn:hover { border-color: var(--rr-green); }
+    #repo-rescue-prototype .rr-btn.primary { color: #fff; border-color: #15765b; background: #15765b; box-shadow: 0 7px 18px rgba(21, 118, 91, .18); }
+    #repo-rescue-prototype .rr-btn.primary:hover { background: #10654d; }
+    #repo-rescue-prototype .rr-btn.ghost { color: var(--rr-muted); background: transparent; }
+    #repo-rescue-prototype .rr-btn.full { width: 100%; }
+
+    #repo-rescue-prototype .rr-sourcebar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      min-height: 58px;
+      padding: 11px 14px;
+      border: 1px solid var(--rr-line);
+      border-radius: 12px;
+      background: var(--rr-panel);
+    }
+    #repo-rescue-prototype .rr-sourcebar svg { flex: 0 0 auto; width: 17px; height: 17px; color: var(--rr-green); }
+    #repo-rescue-prototype .rr-source-copy { min-width: 0; }
+    #repo-rescue-prototype .rr-source-label { color: var(--rr-muted); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    #repo-rescue-prototype .rr-source-url { display: block; overflow: hidden; margin-top: 3px; color: var(--rr-text); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    #repo-rescue-prototype .rr-input {
+      width: 100%;
+      min-height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--rr-line);
+      border-radius: 8px;
+      outline: none;
+      color: var(--rr-text);
+      background: var(--rr-panel-2);
+    }
+    #repo-rescue-prototype .rr-input:focus { border-color: var(--rr-green); box-shadow: 0 0 0 3px light-dark(rgba(20,122,91,.12), rgba(89,215,168,.12)); }
+
+    #repo-rescue-prototype .rr-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+    #repo-rescue-prototype .rr-metric {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid var(--rr-line);
+      border-radius: 12px;
+      background: var(--rr-panel);
+    }
+    #repo-rescue-prototype .rr-metric-label { color: var(--rr-muted); font-size: 11px; font-weight: 650; }
+    #repo-rescue-prototype .rr-metric-value { margin-top: 6px; font-size: 23px; font-weight: 700; letter-spacing: -.03em; }
+    #repo-rescue-prototype .rr-metric-note { margin-top: 4px; color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-metric-note.good { color: var(--rr-green); }
+
+    #repo-rescue-prototype .rr-grid-main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .75fr); gap: 14px; }
+    #repo-rescue-prototype .rr-panel {
+      min-width: 0;
+      border: 1px solid var(--rr-line);
+      border-radius: 13px;
+      background: var(--rr-panel);
+    }
+    #repo-rescue-prototype .rr-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 16px; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-panel-head p { margin-top: 3px; color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-panel-body { padding: 15px 16px; }
+
+    #repo-rescue-prototype .rr-finding { width: 100%; padding: 14px 0; border: 0; border-bottom: 1px solid var(--rr-line); color: inherit; background: transparent; text-align: left; }
+    #repo-rescue-prototype .rr-finding:first-child { padding-top: 0; }
+    #repo-rescue-prototype .rr-finding:last-child { padding-bottom: 0; border-bottom: 0; }
+    #repo-rescue-prototype .rr-finding-head { gap: 8px; }
+    #repo-rescue-prototype .rr-severity { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--rr-amber); }
+    #repo-rescue-prototype .rr-severity.red { background: var(--rr-red); }
+    #repo-rescue-prototype .rr-severity.blue { background: var(--rr-blue); }
+    #repo-rescue-prototype .rr-finding-title { font-weight: 700; }
+    #repo-rescue-prototype .rr-finding-path { margin-top: 5px; color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-finding-proof { margin-top: 8px; color: var(--rr-muted); font-size: 12px; }
+    #repo-rescue-prototype .rr-finding:hover .rr-finding-title { color: var(--rr-green); }
+
+    #repo-rescue-prototype .rr-tool-list { display: grid; gap: 10px; }
+    #repo-rescue-prototype .rr-tool {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rr-line);
+    }
+    #repo-rescue-prototype .rr-tool:last-child { padding-bottom: 0; border-bottom: 0; }
+    #repo-rescue-prototype .rr-tool-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: var(--rr-green); background: var(--rr-green-soft); }
+    #repo-rescue-prototype .rr-tool-icon svg { width: 14px; height: 14px; }
+    #repo-rescue-prototype .rr-tool-name { font-size: 12px; font-weight: 650; }
+    #repo-rescue-prototype .rr-tool-reason { margin-top: 2px; color: var(--rr-muted); font-size: 10px; }
+    #repo-rescue-prototype .rr-tool-state { color: var(--rr-green); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    #repo-rescue-prototype .rr-tool-state.skip { color: var(--rr-muted); }
+
+    #repo-rescue-prototype .rr-deep-card {
+      margin-top: 14px;
+      padding: 15px;
+      border-radius: 12px;
+      color: light-dark(#18372d, #e3f8f0);
+      background: linear-gradient(135deg, light-dark(#e8f7f1, #14372d), light-dark(#f2f9f6, #102a23));
+    }
+    #repo-rescue-prototype .rr-deep-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    #repo-rescue-prototype .rr-deep-card p { margin-top: 6px; color: light-dark(#537369, #a7c8bd); font-size: 11px; }
+    #repo-rescue-prototype .rr-price { font-size: 17px; font-weight: 750; white-space: nowrap; }
+    #repo-rescue-prototype .rr-deep-card .rr-btn { margin-top: 13px; }
+
+    #repo-rescue-prototype .rr-evidence-layout { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr); gap: 14px; }
+    #repo-rescue-prototype .rr-evidence-list { padding: 7px; }
+    #repo-rescue-prototype .rr-evidence-button { width: 100%; padding: 12px; border: 0; border-radius: 9px; color: inherit; background: transparent; text-align: left; }
+    #repo-rescue-prototype .rr-evidence-button:hover,
+    #repo-rescue-prototype .rr-evidence-button.active { background: var(--rr-panel-2); }
+    #repo-rescue-prototype .rr-evidence-button.active { box-shadow: inset 3px 0 var(--rr-green); }
+    #repo-rescue-prototype .rr-evidence-button strong { display: block; font-size: 12px; }
+    #repo-rescue-prototype .rr-evidence-button span { display: block; margin-top: 4px; color: var(--rr-muted); font-size: 10px; }
+    #repo-rescue-prototype .rr-evidence-detail { padding: 19px; }
+    #repo-rescue-prototype .rr-evidence-detail > p { margin-top: 8px; color: var(--rr-muted); }
+    #repo-rescue-prototype .rr-proof-stack { display: grid; gap: 9px; margin-top: 18px; }
+    #repo-rescue-prototype .rr-evidence-row { justify-content: space-between; gap: 18px; padding: 11px 0; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-evidence-row:last-child { border-bottom: 0; }
+    #repo-rescue-prototype .rr-evidence-signal { display: flex; gap: 9px; min-width: 0; }
+    #repo-rescue-prototype .rr-evidence-signal svg { flex: 0 0 auto; width: 15px; height: 15px; color: var(--rr-green); }
+    #repo-rescue-prototype .rr-evidence-signal strong { display: block; font-size: 12px; }
+    #repo-rescue-prototype .rr-evidence-signal span { display: block; margin-top: 2px; color: var(--rr-muted); font-size: 10px; }
+    #repo-rescue-prototype .rr-evidence-value { flex: 0 0 auto; font-size: 12px; font-weight: 700; }
+    #repo-rescue-prototype .rr-conclusion { margin-top: 17px; padding: 13px; border-left: 3px solid var(--rr-green); border-radius: 0 9px 9px 0; background: var(--rr-green-soft); }
+    #repo-rescue-prototype .rr-conclusion span { display: block; color: var(--rr-green); font-size: 10px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    #repo-rescue-prototype .rr-conclusion p { margin-top: 5px; font-size: 12px; }
+
+    #repo-rescue-prototype .rr-impact-layout { display: grid; grid-template-columns: minmax(220px, .65fr) minmax(0, 1.35fr); gap: 14px; }
+    #repo-rescue-prototype .rr-file-search { padding: 12px; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-file-list { padding: 7px; }
+    #repo-rescue-prototype .rr-file-button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; border: 0; border-radius: 8px; color: var(--rr-muted); background: transparent; text-align: left; }
+    #repo-rescue-prototype .rr-file-button:hover,
+    #repo-rescue-prototype .rr-file-button.active { color: var(--rr-text); background: var(--rr-panel-2); }
+    #repo-rescue-prototype .rr-file-button.active { color: var(--rr-green); }
+    #repo-rescue-prototype .rr-file-button svg { flex: 0 0 auto; width: 14px; height: 14px; }
+    #repo-rescue-prototype .rr-file-button code { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    #repo-rescue-prototype .rr-impact-hero { padding: 18px; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-impact-hero .rr-chip { display: inline-flex; margin-bottom: 11px; }
+    #repo-rescue-prototype .rr-impact-hero p { margin-top: 7px; color: var(--rr-muted); }
+    #repo-rescue-prototype .rr-impact-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    #repo-rescue-prototype .rr-impact-group { padding: 16px 18px; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-impact-group:nth-child(odd) { border-right: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-impact-group:nth-last-child(-n+2) { border-bottom: 0; }
+    #repo-rescue-prototype .rr-impact-group-title { display: flex; align-items: center; gap: 7px; color: var(--rr-muted); font-size: 10px; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+    #repo-rescue-prototype .rr-impact-group-title svg { width: 13px; height: 13px; }
+    #repo-rescue-prototype .rr-impact-items { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+    #repo-rescue-prototype .rr-code-pill { padding: 5px 7px; border-radius: 6px; color: var(--rr-text); background: var(--rr-panel-2); font-family: "SFMono-Regular", Consolas, monospace; font-size: 10px; }
+    #repo-rescue-prototype .rr-empty { color: var(--rr-muted); font-size: 11px; }
+
+    #repo-rescue-prototype .rr-activity { display: grid; gap: 0; }
+    #repo-rescue-prototype .rr-agent-line { align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-agent-line:last-child { border-bottom: 0; }
+    #repo-rescue-prototype .rr-agent-node { display: grid; place-items: center; flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; color: var(--rr-muted); background: var(--rr-panel-2); }
+    #repo-rescue-prototype .rr-agent-node.done { color: var(--rr-green); background: var(--rr-green-soft); }
+    #repo-rescue-prototype .rr-agent-node svg { width: 14px; height: 14px; }
+    #repo-rescue-prototype .rr-agent-copy { flex: 1; min-width: 0; }
+    #repo-rescue-prototype .rr-agent-copy strong { font-size: 12px; }
+    #repo-rescue-prototype .rr-agent-copy p { margin-top: 3px; color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-agent-time { color: var(--rr-muted); font-size: 10px; white-space: nowrap; }
+
+    #repo-rescue-prototype .rr-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(2, 10, 8, .68);
+      backdrop-filter: blur(6px);
+    }
+    #repo-rescue-prototype .rr-modal-backdrop.open { display: flex; }
+    #repo-rescue-prototype .rr-app { position: relative; }
+    #repo-rescue-prototype .rr-modal { width: min(440px, 100%); overflow: hidden; border: 1px solid var(--rr-line); border-radius: 16px; background: var(--rr-panel); box-shadow: 0 24px 70px rgba(0,0,0,.34); }
+    #repo-rescue-prototype .rr-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 18px; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-modal-title { gap: 10px; }
+    #repo-rescue-prototype .rr-modal-title svg { width: 19px; height: 19px; color: var(--rr-green); }
+    #repo-rescue-prototype .rr-modal-head p { margin-top: 4px; color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; color: var(--rr-muted); background: transparent; }
+    #repo-rescue-prototype .rr-close:hover { background: var(--rr-panel-2); }
+    #repo-rescue-prototype .rr-close svg { width: 16px; height: 16px; }
+    #repo-rescue-prototype .rr-modal-body { padding: 18px; }
+    #repo-rescue-prototype .rr-payment-route { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 7px; margin-bottom: 18px; }
+    #repo-rescue-prototype .rr-route-node { padding: 9px 7px; border-radius: 9px; background: var(--rr-panel-2); text-align: center; }
+    #repo-rescue-prototype .rr-route-node strong { display: block; font-size: 10px; }
+    #repo-rescue-prototype .rr-route-node span { display: block; margin-top: 2px; color: var(--rr-muted); font-size: 9px; }
+    #repo-rescue-prototype .rr-route-arrow { color: var(--rr-muted); }
+    #repo-rescue-prototype .rr-route-arrow svg { width: 13px; height: 13px; }
+    #repo-rescue-prototype .rr-payment-summary { margin-bottom: 15px; border-top: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-payment-row { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; border-bottom: 1px solid var(--rr-line); }
+    #repo-rescue-prototype .rr-payment-row span { color: var(--rr-muted); font-size: 11px; }
+    #repo-rescue-prototype .rr-payment-row strong { font-size: 11px; text-align: right; }
+    #repo-rescue-prototype .rr-payment-note { display: flex; gap: 8px; margin-bottom: 15px; padding: 10px; border-radius: 8px; color: var(--rr-amber); background: var(--rr-amber-soft); font-size: 10px; }
+    #repo-rescue-prototype .rr-payment-note svg { flex: 0 0 auto; width: 14px; height: 14px; }
+    #repo-rescue-prototype .rr-payment-state { display: none; margin-bottom: 14px; padding: 12px; border-radius: 9px; color: var(--rr-green); background: var(--rr-green-soft); font-size: 11px; font-weight: 650; }
+    #repo-rescue-prototype .rr-payment-state.show { display: block; }
+    #repo-rescue-prototype .rr-spin { animation: rr-spin 1s linear infinite; }
+    @keyframes rr-spin { to { transform: rotate(360deg); } }
+
+    #repo-rescue-prototype .rr-toast { position: absolute; right: 18px; bottom: 18px; z-index: 30; display: none; max-width: 340px; padding: 12px 14px; border: 1px solid var(--rr-line); border-radius: 10px; color: var(--rr-text); background: var(--rr-panel); box-shadow: 0 12px 36px rgba(0,0,0,.22); font-size: 11px; }
+    #repo-rescue-prototype .rr-toast.show { display: block; }
+
+    @media (max-width: 780px) {
+      #repo-rescue-prototype .rr-home { grid-template-columns: 1fr; gap: 36px; padding: 44px 24px; }
+      #repo-rescue-prototype .rr-home-title { font-size: clamp(44px, 12vw, 64px); }
+      #repo-rescue-prototype .rr-body { grid-template-columns: 1fr; }
+      #repo-rescue-prototype .rr-sidebar { padding: 10px 12px; border-right: 0; border-bottom: 1px solid var(--rr-line); }
+      #repo-rescue-prototype .rr-repo-mini,
+      #repo-rescue-prototype .rr-nav-label,
+      #repo-rescue-prototype .rr-nav-spacer { display: none; }
+      #repo-rescue-prototype .rr-nav { display: flex; gap: 4px; margin: 0; overflow-x: auto; }
+      #repo-rescue-prototype .rr-nav-button { width: auto; flex: 0 0 auto; }
+      #repo-rescue-prototype .rr-metrics { grid-template-columns: repeat(2, 1fr); }
+      #repo-rescue-prototype .rr-grid-main,
+      #repo-rescue-prototype .rr-evidence-layout,
+      #repo-rescue-prototype .rr-impact-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      #repo-rescue-prototype .rr-home { padding: 36px 16px; }
+      #repo-rescue-prototype .rr-home-card-head,
+      #repo-rescue-prototype .rr-home-panel { padding-left: 20px; padding-right: 20px; }
+      #repo-rescue-prototype .rr-home-tabs { margin-left: 20px; margin-right: 20px; }
+      #repo-rescue-prototype .rr-app { border-radius: 12px; }
+      #repo-rescue-prototype .rr-topbar { padding: 0 14px; }
+      #repo-rescue-prototype .rr-top-actions .rr-chip:first-child { display: none; }
+      #repo-rescue-prototype .rr-main { padding: 16px 13px; }
+      #repo-rescue-prototype .rr-page-head { align-items: stretch; flex-direction: column; }
+      #repo-rescue-prototype .rr-sourcebar { align-items: flex-start; }
+      #repo-rescue-prototype .rr-metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+      #repo-rescue-prototype .rr-metric { padding: 12px; }
+      #repo-rescue-prototype .rr-metric-value { font-size: 20px; }
+      #repo-rescue-prototype .rr-impact-groups { grid-template-columns: 1fr; }
+      #repo-rescue-prototype .rr-impact-group,
+      #repo-rescue-prototype .rr-impact-group:nth-child(odd),
+      #repo-rescue-prototype .rr-impact-group:nth-last-child(-n+2) { border-right: 0; border-bottom: 1px solid var(--rr-line); }
+      #repo-rescue-prototype .rr-impact-group:last-child { border-bottom: 0; }
+      #repo-rescue-prototype .rr-payment-route { grid-template-columns: 1fr; }
+      #repo-rescue-prototype .rr-route-arrow { transform: rotate(90deg); justify-self: center; }
+    }
+  </style>
+
+  <div class="rr-app">
+    <header class="rr-topbar">
+      <div class="rr-brand">
+        <span class="rr-brand-mark"><i data-lucide="shield-check" aria-hidden="true"></i></span>
+        <span>RepoRescue</span>
+      </div>
+      <div class="rr-top-actions">
+        <span class="rr-chip" id="rr-workspace-mode"><i data-lucide="circle-dot" aria-hidden="true"></i> Workspace ready</span>
+        <span class="rr-chip"><i data-lucide="test-tube-2" aria-hidden="true"></i> LoRA Testnet</span>
+        <span class="rr-chip live"><span class="rr-live-dot"></span> Agent ready</span>
+      </div>
+    </header>
+
+    <section class="rr-home" id="rr-home">
+      <div class="rr-home-copy">
+        <span class="rr-home-kicker">Signal online</span>
+        <h1 class="rr-home-title">Know the code <span>before it moves.</span></h1>
+        <p class="rr-home-description">RepoRescue connects repository structure, tests, dependencies and Git history so your next change starts with evidence—not a generic health score.</p>
+        <div class="rr-home-points">
+          <span class="rr-home-point"><i data-lucide="link-2" aria-hidden="true"></i> Connected evidence</span>
+          <span class="rr-home-point"><i data-lucide="github" aria-hidden="true"></i> Public GitHub scanning</span>
+          <span class="rr-home-point"><i data-lucide="git-branch" aria-hidden="true"></i> Change-impact context</span>
+        </div>
+      </div>
+
+      <section class="rr-home-card" aria-labelledby="rr-home-card-title">
+        <div class="rr-home-card-head">
+          <div class="rr-home-card-label">Initialize workspace</div>
+          <h2 id="rr-home-card-title">Bring a repository into focus.</h2>
+        </div>
+        <div class="rr-home-tabs" role="tablist" aria-label="Workspace source">
+          <button class="rr-home-tab active" id="rr-home-demo-tab" type="button" role="tab" aria-selected="true" aria-controls="rr-home-demo-panel">Explore demo</button>
+          <button class="rr-home-tab" id="rr-home-git-tab" type="button" role="tab" aria-selected="false" aria-controls="rr-home-git-panel">GitHub URL</button>
+        </div>
+        <div class="rr-home-panel" id="rr-home-demo-panel" role="tabpanel" aria-labelledby="rr-home-demo-tab">
+          <p>Open a seeded checkout-service workspace and explore every dashboard interaction without using the GitHub API.</p>
+          <button class="rr-home-action" id="rr-home-demo-launch" type="button">Launch demo workspace <i data-lucide="arrow-right" aria-hidden="true"></i></button>
+        </div>
+        <div class="rr-home-panel rr-hidden" id="rr-home-git-panel" role="tabpanel" aria-labelledby="rr-home-git-tab">
+          <p>Paste an accessible public GitHub repository URL to run the lightweight live Basic Scan.</p>
+          <label class="sr-only" for="rr-home-repo-url">Public GitHub repository URL</label>
+          <input class="rr-home-url" id="rr-home-repo-url" value="https://github.com/fastapi/fastapi" aria-label="Public GitHub repository URL">
+          <button class="rr-home-action" id="rr-home-scan-btn" type="button">Analyze public repository <i data-lucide="arrow-right" aria-hidden="true"></i></button>
+        </div>
+      </section>
+    </section>
+
+    <div class="rr-body rr-hidden" id="rr-workspace-shell">
+      <aside class="rr-sidebar" aria-label="Repository navigation">
+        <div class="rr-repo-mini">
+          <div class="rr-repo-line">
+            <span class="rr-repo-icon"><i data-lucide="github" aria-hidden="true"></i></span>
+            <div class="rr-repo-copy">
+              <div class="rr-repo-name" id="rr-side-repo">acme-labs/checkout-service</div>
+              <div class="rr-repo-meta" id="rr-repo-meta">main · Python</div>
+            </div>
+          </div>
+        </div>
+        <nav class="rr-nav">
+          <div class="rr-nav-label">Investigation</div>
+          <button class="rr-nav-button active" data-page="overview" type="button"><i data-lucide="layout-dashboard" aria-hidden="true"></i> Overview</button>
+          <button class="rr-nav-button" data-page="evidence" type="button"><i data-lucide="waypoints" aria-hidden="true"></i> Evidence engine</button>
+          <button class="rr-nav-button" data-page="impact" type="button"><i data-lucide="git-branch" aria-hidden="true"></i> Change impact</button>
+          <button class="rr-nav-button" data-page="activity" type="button"><i data-lucide="bot" aria-hidden="true"></i> Agent activity</button>
+          <div class="rr-nav-spacer"></div>
+          <div class="rr-nav-label">Workspace</div>
+          <button class="rr-nav-button" data-action="home" type="button"><i data-lucide="house" aria-hidden="true"></i> Back to home</button>
+        </nav>
+      </aside>
+
+      <main class="rr-main">
+        <section class="rr-page active" data-panel="overview">
+          <div class="rr-page-head">
+            <div>
+              <h1>Repository investigation</h1>
+              <p class="rr-subtitle">Evidence from code, history, dependencies, and tests—connected in one place.</p>
+            </div>
+            <button class="rr-btn primary" data-action="deep" type="button"><i data-lucide="sparkles" aria-hidden="true"></i> Deep investigation</button>
+          </div>
+
+          <div class="rr-sourcebar" aria-label="Active repository URL">
+            <i data-lucide="link-2" aria-hidden="true"></i>
+            <div class="rr-source-copy">
+              <div class="rr-source-label">Repository source · read only</div>
+              <code class="rr-source-url" id="rr-active-url">https://demo.reporescue.app/acme-labs/checkout-service</code>
+            </div>
+          </div>
+
+          <div class="rr-metrics">
+            <div class="rr-metric"><div class="rr-metric-label">Files indexed</div><div class="rr-metric-value" id="rr-files">146</div><div class="rr-metric-note" id="rr-files-note">32 source modules</div></div>
+            <div class="rr-metric"><div class="rr-metric-label">Evidence signals</div><div class="rr-metric-value" id="rr-signals">18</div><div class="rr-metric-note good" id="rr-signals-note">5 sources connected</div></div>
+            <div class="rr-metric"><div class="rr-metric-label">Tests detected</div><div class="rr-metric-value" id="rr-tests">38</div><div class="rr-metric-note" id="rr-tests-note">Across 11 modules</div></div>
+            <div class="rr-metric"><div class="rr-metric-label">Findings</div><div class="rr-metric-value" id="rr-findings">4</div><div class="rr-metric-note" id="rr-findings-note">Evidence-backed only</div></div>
+          </div>
+
+          <div class="rr-grid-main">
+            <section class="rr-panel">
+              <div class="rr-panel-head">
+                <div><h2>Connected findings</h2><p>Prioritized by strength of supporting evidence—not a health score.</p></div>
+                <span class="rr-chip" id="rr-findings-chip">4 findings</span>
+              </div>
+              <div class="rr-panel-body" id="rr-connected-findings">
+                <button class="rr-finding" data-open-finding="0" type="button">
+                  <div class="rr-finding-head"><span class="rr-severity red"></span><span class="rr-finding-title">Checkout service is a change hotspot</span></div>
+                  <div class="rr-finding-path"><code>src/services/checkout.py</code></div>
+                  <div class="rr-finding-proof">High complexity + 23 recent edits + 6 corrective commits + 9 dependents</div>
+                </button>
+                <button class="rr-finding" data-open-finding="1" type="button">
+                  <div class="rr-finding-head"><span class="rr-severity"></span><span class="rr-finding-title">Validation and checkout move together unexpectedly</span></div>
+                  <div class="rr-finding-path"><code>src/validation.py ↔ src/services/checkout.py</code></div>
+                  <div class="rr-finding-proof">Changed together in 14 commits despite no direct import relationship</div>
+                </button>
+                <button class="rr-finding" data-open-finding="2" type="button">
+                  <div class="rr-finding-head"><span class="rr-severity"></span><span class="rr-finding-title">Payment adapter has weak test protection</span></div>
+                  <div class="rr-finding-path"><code>src/adapters/payment_gateway.py</code></div>
+                  <div class="rr-finding-proof">External dependency boundary + 3 mapped call paths + no direct unit test</div>
+                </button>
+                <button class="rr-finding" data-open-finding="3" type="button">
+                  <div class="rr-finding-head"><span class="rr-severity blue"></span><span class="rr-finding-title">Continuity depends heavily on one maintainer</span></div>
+                  <div class="rr-finding-path"><code>src/refunds/*</code></div>
+                  <div class="rr-finding-proof">One contributor authored 87% of a business-critical module—shown as context, not a flaw</div>
+                </button>
+              </div>
+            </section>
+
+            <aside>
+              <section class="rr-panel">
+                <div class="rr-panel-head"><div><h2>Agent plan</h2><p>Chosen after repository inspection</p></div></div>
+                <div class="rr-panel-body">
+                  <div class="rr-tool-list" id="rr-tool-list">
+                    <div class="rr-tool"><span class="rr-tool-icon"><i data-lucide="braces" aria-hidden="true"></i></span><div><div class="rr-tool-name">Python static analysis</div><div class="rr-tool-reason">Python source detected</div></div><span class="rr-tool-state">Run</span></div>
+                    <div class="rr-tool"><span class="rr-tool-icon"><i data-lucide="git-commit-horizontal" aria-hidden="true"></i></span><div><div class="rr-tool-name">History & coupling</div><div class="rr-tool-reason">824 commits available</div></div><span class="rr-tool-state">Run</span></div>
+                    <div class="rr-tool"><span class="rr-tool-icon"><i data-lucide="network" aria-hidden="true"></i></span><div><div class="rr-tool-name">Dependency mapping</div><div class="rr-tool-reason">32 modules detected</div></div><span class="rr-tool-state">Run</span></div>
+                    <div class="rr-tool"><span class="rr-tool-icon"><i data-lucide="flask-conical" aria-hidden="true"></i></span><div><div class="rr-tool-name">Test mapping</div><div class="rr-tool-reason">pytest structure detected</div></div><span class="rr-tool-state">Run</span></div>
+                  </div>
+                </div>
+              </section>
+              <section class="rr-deep-card">
+                <div class="rr-deep-top"><div><h2>Go deeper</h2><p>Unlock the full agentic investigation through x402.</p></div><div class="rr-price">0.25 ALGO</div></div>
+                <button class="rr-btn primary full" data-action="deep" type="button"><i data-lucide="wallet-cards" aria-hidden="true"></i> Run via x402</button>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section class="rr-page" data-panel="evidence">
+          <div class="rr-page-head"><div><h1>Evidence engine</h1><p class="rr-subtitle">See exactly which signals support each investigation finding.</p></div><span class="rr-chip live"><i data-lucide="link-2" aria-hidden="true"></i> 18 signals connected</span></div>
+          <div class="rr-evidence-layout">
+            <section class="rr-panel rr-evidence-list" id="rr-evidence-list" aria-label="Findings">
+              <button class="rr-evidence-button active" data-evidence="0" type="button"><strong>Checkout service is a change hotspot</strong><span>4 supporting signals · strong connection</span></button>
+              <button class="rr-evidence-button" data-evidence="1" type="button"><strong>Validation and checkout move together</strong><span>2 supporting signals · hidden coupling</span></button>
+              <button class="rr-evidence-button" data-evidence="2" type="button"><strong>Payment adapter has weak test protection</strong><span>3 supporting signals · review recommended</span></button>
+              <button class="rr-evidence-button" data-evidence="3" type="button"><strong>Refunds knowledge is concentrated</strong><span>3 observations · continuity context</span></button>
+            </section>
+            <section class="rr-panel rr-evidence-detail" aria-live="polite">
+              <span class="rr-chip" id="rr-evidence-type">Change hotspot</span>
+              <h2 id="rr-evidence-title" style="margin-top:12px">Checkout service is a change hotspot</h2>
+              <p id="rr-evidence-description">This area deserves investigation because change frequency is reinforced by structural complexity, broad reach, and repeated corrective work.</p>
+              <div class="rr-proof-stack" id="rr-proof-stack"></div>
+              <div class="rr-conclusion"><span>Evidence engine conclusion</span><p id="rr-evidence-conclusion">Review this module and its mapped tests before modifying checkout behavior. Frequent change alone did not create this finding.</p></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="rr-page" data-panel="impact">
+          <div class="rr-page-head"><div><h1>Change impact intelligence</h1><p class="rr-subtitle">Choose a file to see structural and historical impact before editing it.</p></div></div>
+          <div class="rr-impact-layout">
+            <section class="rr-panel">
+              <div class="rr-file-search"><input class="rr-input" id="rr-file-filter" placeholder="Filter files…" aria-label="Filter repository files"></div>
+              <div class="rr-file-list" id="rr-file-list"></div>
+            </section>
+            <section class="rr-panel" aria-live="polite">
+              <div class="rr-impact-hero">
+                <span class="rr-chip"><i data-lucide="file-code-2" aria-hidden="true"></i> Selected file</span>
+                <h2><code id="rr-impact-file">src/services/checkout.py</code></h2>
+                <p id="rr-impact-summary">High-impact service with broad dependency reach and repeated corrective history.</p>
+              </div>
+              <div class="rr-impact-groups" id="rr-impact-groups"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="rr-page" data-panel="activity">
+          <div class="rr-page-head"><div><h1>Agent activity</h1><p class="rr-subtitle">A transparent record of what the investigation agent chose and why.</p></div><button class="rr-btn primary" data-action="deep" type="button"><i data-lucide="play" aria-hidden="true"></i> Run again</button></div>
+          <section class="rr-panel">
+            <div class="rr-panel-head"><div><h2>Latest investigation run</h2><p>Completed in 41 seconds · payment verified on LoRA Testnet</p></div><span class="rr-chip live">Completed</span></div>
+            <div class="rr-panel-body rr-activity" id="rr-activity-list">
+              <div class="rr-agent-line"><span class="rr-agent-node done"><i data-lucide="check" aria-hidden="true"></i></span><div class="rr-agent-copy"><strong>Inspected repository structure</strong><p>Detected Python 82%, YAML 9%, Docker and pytest configuration.</p></div><span class="rr-agent-time">00:02</span></div>
+              <div class="rr-agent-line"><span class="rr-agent-node done"><i data-lucide="check" aria-hidden="true"></i></span><div class="rr-agent-copy"><strong>Selected four relevant tools</strong><p>Static analysis, dependency mapping, history coupling, and test mapping selected. Frontend analysis skipped.</p></div><span class="rr-agent-time">00:05</span></div>
+              <div class="rr-agent-line"><span class="rr-agent-node done"><i data-lucide="check" aria-hidden="true"></i></span><div class="rr-agent-copy"><strong>Ran parallel analysis</strong><p>Collected 18 signals across source, history, tests, dependencies, and ownership.</p></div><span class="rr-agent-time">00:31</span></div>
+              <div class="rr-agent-line"><span class="rr-agent-node done"><i data-lucide="check" aria-hidden="true"></i></span><div class="rr-agent-copy"><strong>Connected evidence into findings</strong><p>Generated four explainable findings and indexed file-level change impact.</p></div><span class="rr-agent-time">00:41</span></div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="rr-modal-backdrop" id="rr-payment-modal" role="dialog" aria-modal="true" aria-labelledby="rr-payment-title">
+      <div class="rr-modal">
+        <div class="rr-modal-head">
+          <div class="rr-modal-title"><i data-lucide="badge-dollar-sign" aria-hidden="true"></i><div><h2 id="rr-payment-title">Unlock deep investigation</h2><p>x402 payment request · HTTP 402</p></div></div>
+          <button class="rr-close" id="rr-modal-close" type="button" aria-label="Close payment dialog"><i data-lucide="x" aria-hidden="true"></i></button>
+        </div>
+        <div class="rr-modal-body">
+          <div class="rr-payment-route" aria-label="Payment route">
+            <div class="rr-route-node"><strong>RepoRescue</strong><span>x402 request</span></div><span class="rr-route-arrow"><i data-lucide="arrow-right" aria-hidden="true"></i></span>
+            <div class="rr-route-node"><strong>GoPlausible</strong><span>facilitator</span></div><span class="rr-route-arrow"><i data-lucide="arrow-right" aria-hidden="true"></i></span>
+            <div class="rr-route-node"><strong>Algorand</strong><span>LoRA Testnet</span></div>
+          </div>
+          <div class="rr-payment-summary">
+            <div class="rr-payment-row"><span>Service</span><strong>Deep repository investigation</strong></div>
+            <div class="rr-payment-row"><span>Amount</span><strong>0.25 ALGO</strong></div>
+            <div class="rr-payment-row"><span>Recipient</span><strong><code>Q7L3…9KPA</code></strong></div>
+            <div class="rr-payment-row"><span>Network</span><strong>LoRA Algorand Testnet</strong></div>
+          </div>
+          <div class="rr-payment-note"><i data-lucide="info" aria-hidden="true"></i><span>Prototype simulation: this demonstrates the exact UX state. Replace the handler with the genuine <code>@x402-avm</code> and GoPlausible flow for final submission.</span></div>
+          <div class="rr-payment-state" id="rr-payment-state" aria-live="polite"></div>
+          <button class="rr-btn primary full" id="rr-pay-button" type="button"><i data-lucide="wallet-cards" aria-hidden="true"></i> Simulate testnet payment</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rr-toast" id="rr-toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.getElementById('repo-rescue-prototype');
+      if (!root) return;
+
+      let findings = [
+        {
+          type: 'Change hotspot',
+          severity: 'red',
+          path: 'src/services/checkout.py',
+          proof: 'High complexity + 23 recent edits + 6 corrective commits + 9 dependents',
+          title: 'Checkout service is a change hotspot',
+          description: 'This area deserves investigation because change frequency is reinforced by structural complexity, broad reach, and repeated corrective work.',
+          conclusion: 'Review this module and its mapped tests before modifying checkout behavior. Frequent change alone did not create this finding.',
+          proofs: [
+            ['activity', 'Git history', '23 edits in 90 days', '23 edits'],
+            ['braces', 'Static analysis', 'Cyclomatic complexity concentrated in process_checkout()', '18 complexity'],
+            ['network', 'Dependency graph', 'Nine modules call or import this service', '9 dependents'],
+            ['rotate-ccw', 'Corrective history', 'Fix/revert patterns repeatedly touch this file', '6 commits']
+          ]
+        },
+        {
+          type: 'Hidden coupling',
+          severity: 'amber',
+          path: 'src/validation.py ↔ src/services/checkout.py',
+          proof: 'Changed together in 14 commits despite no direct import relationship',
+          title: 'Validation and checkout move together',
+          description: 'These files repeatedly change together even though the dependency graph contains no direct structural connection.',
+          conclusion: 'Inspect validation behavior whenever checkout changes. Their historical coupling suggests an undocumented behavioral relationship.',
+          proofs: [
+            ['git-commit-horizontal', 'Co-change history', 'Both files appeared together in 14 commits', '14 commits'],
+            ['unlink', 'Dependency graph', 'No direct import or call edge was found', '0 direct links']
+          ]
+        },
+        {
+          type: 'Test protection',
+          severity: 'amber',
+          path: 'src/adapters/payment_gateway.py',
+          proof: 'External dependency boundary + 3 mapped call paths + no direct unit test',
+          title: 'Payment adapter has weak test protection',
+          description: 'The adapter sits at an external service boundary and affects multiple payment paths, but direct test evidence is missing.',
+          conclusion: 'Add focused contract or unit tests before changing the payment adapter. Existing integration tests do not isolate its behavior.',
+          proofs: [
+            ['plug', 'Dependency boundary', 'Connects application logic to an external gateway', 'External I/O'],
+            ['route', 'Call graph', 'Used across charge, capture, and refund paths', '3 paths'],
+            ['flask-conical', 'Test mapping', 'No unit test directly imports or mocks the adapter', '0 direct tests']
+          ]
+        },
+        {
+          type: 'Continuity observation',
+          severity: 'blue',
+          path: 'src/refunds/*',
+          proof: 'One contributor authored 87% of a business-critical module—context, not a flaw',
+          title: 'Refunds knowledge is concentrated',
+          description: 'A business-critical module is understood and changed mainly by one contributor. This is context for planning, not an automatic code flaw.',
+          conclusion: 'Consider pairing or documentation before substantial refunds work. Do not treat contributor concentration itself as a defect.',
+          proofs: [
+            ['user-round', 'Authorship history', 'One contributor authored most recent module changes', '87%'],
+            ['landmark', 'Business reach', 'Refunds connect to ledger and payment gateway flows', '2 critical links'],
+            ['book-open', 'Documentation', 'No module-level operational notes detected', 'No runbook']
+          ]
+        }
+      ];
+
+      let files = [
+        {
+          path: 'src/services/checkout.py', summary: 'High-impact service with broad dependency reach and repeated corrective history.',
+          groups: [
+            ['network', 'Direct dependents', ['src/api/orders.py', 'src/jobs/retry.py', 'src/refunds/service.py']],
+            ['flask-conical', 'Related tests', ['tests/test_checkout.py', 'tests/test_orders_api.py']],
+            ['git-merge', 'Historical coupling', ['src/validation.py', 'src/models/order.py']],
+            ['rotate-ccw', 'Corrective patterns', ['6 fix/revert commits', 'last seen 12 days ago']]
+          ]
+        },
+        {
+          path: 'src/validation.py', summary: 'Validation helper with strong historical coupling to checkout behavior.',
+          groups: [
+            ['network', 'Direct dependents', ['src/api/orders.py', 'src/api/refunds.py']],
+            ['flask-conical', 'Related tests', ['tests/test_validation.py']],
+            ['git-merge', 'Historical coupling', ['src/services/checkout.py']],
+            ['rotate-ccw', 'Corrective patterns', ['2 validation fixes']]
+          ]
+        },
+        {
+          path: 'src/adapters/payment_gateway.py', summary: 'External integration boundary used by three payment paths without a direct unit test.',
+          groups: [
+            ['network', 'Direct dependents', ['src/payments/charge.py', 'src/payments/capture.py', 'src/refunds/service.py']],
+            ['flask-conical', 'Related tests', []],
+            ['git-merge', 'Historical coupling', ['src/config.py']],
+            ['rotate-ccw', 'Corrective patterns', ['3 gateway fixes']]
+          ]
+        },
+        {
+          path: 'src/refunds/service.py', summary: 'Business-critical refund logic with concentrated ownership and ledger dependencies.',
+          groups: [
+            ['network', 'Direct dependents', ['src/api/refunds.py']],
+            ['flask-conical', 'Related tests', ['tests/test_refunds.py']],
+            ['git-merge', 'Historical coupling', ['src/ledger/entries.py']],
+            ['rotate-ccw', 'Corrective patterns', ['1 recent rollback']]
+          ]
+        },
+        {
+          path: 'src/models/order.py', summary: 'Shared order model used broadly across API, checkout, and reporting modules.',
+          groups: [
+            ['network', 'Direct dependents', ['7 importing modules']],
+            ['flask-conical', 'Related tests', ['tests/test_models.py']],
+            ['git-merge', 'Historical coupling', ['src/services/checkout.py']],
+            ['rotate-ccw', 'Corrective patterns', []]
+          ]
+        }
+      ];
+
+      const demoFindings = JSON.parse(JSON.stringify(findings));
+      const demoFiles = JSON.parse(JSON.stringify(files));
+
+      const showToast = (message) => {
+        const toast = root.querySelector('#rr-toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 2800);
+      };
+
+      const refreshIcons = () => {
+        if (window.lucide) window.lucide.createIcons({attrs: {width: 16, height: 16}});
+      };
+
+      const goTo = (page) => {
+        root.querySelectorAll('.rr-nav-button[data-page]').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
+        root.querySelectorAll('.rr-page').forEach(panel => panel.classList.toggle('active', panel.dataset.panel === page));
+      };
+
+      const showWorkspace = () => {
+        root.querySelector('#rr-home').classList.add('rr-hidden');
+        root.querySelector('#rr-workspace-shell').classList.remove('rr-hidden');
+      };
+
+      const selectHomeTab = (mode) => {
+        const demo = mode === 'demo';
+        root.querySelector('#rr-home-demo-tab').classList.toggle('active', demo);
+        root.querySelector('#rr-home-demo-tab').setAttribute('aria-selected', String(demo));
+        root.querySelector('#rr-home-git-tab').classList.toggle('active', !demo);
+        root.querySelector('#rr-home-git-tab').setAttribute('aria-selected', String(!demo));
+        root.querySelector('#rr-home-demo-panel').classList.toggle('rr-hidden', !demo);
+        root.querySelector('#rr-home-git-panel').classList.toggle('rr-hidden', demo);
+        if (!demo) window.setTimeout(() => root.querySelector('#rr-home-repo-url').focus(), 0);
+      };
+
+      const showHome = (tab = 'demo') => {
+        root.querySelector('#rr-workspace-shell').classList.add('rr-hidden');
+        root.querySelector('#rr-home').classList.remove('rr-hidden');
+        root.querySelector('#rr-workspace-mode').innerHTML = '<i data-lucide="circle-dot" aria-hidden="true"></i> Workspace ready';
+        root.querySelector('#rr-home-scan-btn').disabled = false;
+        root.querySelector('#rr-home-scan-btn').innerHTML = 'Analyze public repository <i data-lucide="arrow-right" aria-hidden="true"></i>';
+        selectHomeTab(tab);
+        refreshIcons();
+      };
+
+      root.querySelector('#rr-home-demo-tab').addEventListener('click', () => selectHomeTab('demo'));
+      root.querySelector('#rr-home-git-tab').addEventListener('click', () => selectHomeTab('git'));
+
+      const escapeHtml = (value) => String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+
+      const formatBytes = (bytes = 0) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      };
+
+      root.querySelectorAll('.rr-nav-button[data-page]').forEach(btn => btn.addEventListener('click', () => goTo(btn.dataset.page)));
+
+      const renderConnectedFindings = () => {
+        root.querySelector('#rr-connected-findings').innerHTML = findings.map((item, index) => `
+          <button class="rr-finding" data-open-finding="${index}" type="button">
+            <div class="rr-finding-head"><span class="rr-severity ${item.severity === 'red' ? 'red' : item.severity === 'blue' ? 'blue' : ''}"></span><span class="rr-finding-title">${escapeHtml(item.title)}</span></div>
+            <div class="rr-finding-path"><code>${escapeHtml(item.path || item.type)}</code></div>
+            <div class="rr-finding-proof">${escapeHtml(item.proof || `${item.proofs.length} supporting signals`)}</div>
+          </button>`).join('');
+      };
+
+      const renderEvidenceList = () => {
+        root.querySelector('#rr-evidence-list').innerHTML = findings.map((item, index) => `
+          <button class="rr-evidence-button ${index === 0 ? 'active' : ''}" data-evidence="${index}" type="button">
+            <strong>${escapeHtml(item.title)}</strong><span>${item.proofs.length} supporting signals · ${escapeHtml(item.type.toLowerCase())}</span>
+          </button>`).join('');
+      };
+
+      root.querySelector('#rr-connected-findings').addEventListener('click', event => {
+        const button = event.target.closest('[data-open-finding]');
+        if (!button) return;
+        renderEvidence(Number(button.dataset.openFinding));
+        goTo('evidence');
+      });
+
+      root.querySelector('#rr-evidence-list').addEventListener('click', event => {
+        const button = event.target.closest('[data-evidence]');
+        if (!button) return;
+        renderEvidence(Number(button.dataset.evidence));
+      });
+
+      const renderEvidence = (index) => {
+        const item = findings[index];
+        root.querySelectorAll('[data-evidence]').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.evidence) === index));
+        root.querySelector('#rr-evidence-type').textContent = item.type;
+        root.querySelector('#rr-evidence-title').textContent = item.title;
+        root.querySelector('#rr-evidence-description').textContent = item.description;
+        root.querySelector('#rr-evidence-conclusion').textContent = item.conclusion;
+        root.querySelector('#rr-proof-stack').innerHTML = item.proofs.map(([icon, name, description, value]) => `
+          <div class="rr-evidence-row">
+            <div class="rr-evidence-signal"><i data-lucide="${escapeHtml(icon)}" aria-hidden="true"></i><div><strong>${escapeHtml(name)}</strong><span>${escapeHtml(description)}</span></div></div>
+            <span class="rr-evidence-value">${escapeHtml(value)}</span>
+          </div>`).join('');
+        refreshIcons();
+      };
+
+      const renderFileList = (query = '') => {
+        const filtered = files.filter(file => file.path.toLowerCase().includes(query.toLowerCase()));
+        root.querySelector('#rr-file-list').innerHTML = filtered.length ? filtered.map(file => `
+          <button class="rr-file-button ${file.path === currentFile ? 'active' : ''}" data-file-index="${files.indexOf(file)}" type="button"><i data-lucide="file-code-2" aria-hidden="true"></i><code>${escapeHtml(file.path)}</code></button>`).join('') : '<p class="rr-empty" style="padding:10px">No matching files</p>';
+        refreshIcons();
+      };
+
+      let currentFile = files[0].path;
+      const selectFile = (selection) => {
+        const file = typeof selection === 'number' ? files[selection] : files.find(item => item.path === selection);
+        if (!file) return;
+        currentFile = file.path;
+        root.querySelector('#rr-impact-file').textContent = file.path;
+        root.querySelector('#rr-impact-summary').textContent = file.summary;
+        root.querySelector('#rr-impact-groups').innerHTML = file.groups.map(([icon, title, items]) => `
+          <div class="rr-impact-group">
+            <div class="rr-impact-group-title"><i data-lucide="${escapeHtml(icon)}" aria-hidden="true"></i>${escapeHtml(title)}</div>
+            <div class="rr-impact-items">${items.length ? items.map(item => `<span class="rr-code-pill">${escapeHtml(item)}</span>`).join('') : '<span class="rr-empty">None detected</span>'}</div>
+          </div>`).join('');
+        renderFileList(root.querySelector('#rr-file-filter').value);
+        refreshIcons();
+      };
+
+      root.querySelector('#rr-file-filter').addEventListener('input', event => renderFileList(event.target.value));
+      root.querySelector('#rr-file-list').addEventListener('click', event => {
+        const button = event.target.closest('[data-file-index]');
+        if (button) selectFile(Number(button.dataset.fileIndex));
+      });
+      renderEvidence(0);
+      selectFile(currentFile);
+
+      const modal = root.querySelector('#rr-payment-modal');
+      let paymentVerified = false;
+      const openPayment = () => {
+        paymentVerified = false;
+        modal.classList.add('open');
+        root.querySelector('#rr-payment-state').className = 'rr-payment-state';
+        root.querySelector('#rr-payment-state').textContent = '';
+        const pay = root.querySelector('#rr-pay-button');
+        pay.disabled = false;
+        pay.innerHTML = '<i data-lucide="wallet-cards" aria-hidden="true"></i> Simulate testnet payment';
+        refreshIcons();
+      };
+      root.querySelectorAll('[data-action="deep"]').forEach(btn => btn.addEventListener('click', openPayment));
+      root.querySelector('#rr-modal-close').addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', event => { if (event.target === modal) modal.classList.remove('open'); });
+
+      root.querySelector('#rr-pay-button').addEventListener('click', () => {
+        const button = root.querySelector('#rr-pay-button');
+        const state = root.querySelector('#rr-payment-state');
+        if (paymentVerified) {
+          modal.classList.remove('open');
+          goTo('activity');
+          showToast('Deep investigation started. Agent selected 4 relevant tools.');
+          paymentVerified = false;
+          return;
+        }
+        button.disabled = true;
+        button.innerHTML = '<i class="rr-spin" data-lucide="loader-circle" aria-hidden="true"></i> Verifying with facilitator…';
+        state.className = 'rr-payment-state show';
+        state.textContent = 'Payment submitted to GoPlausible Facilitator…';
+        refreshIcons();
+        window.setTimeout(() => {
+          state.textContent = '✓ Payment verified · Txn: LORA7X2…91FD';
+          button.innerHTML = '<i data-lucide="check-circle-2" aria-hidden="true"></i> Start investigation';
+          button.disabled = false;
+          paymentVerified = true;
+          refreshIcons();
+        }, 1500);
+      });
+
+      const sourceExtensions = new Set(['py', 'js', 'jsx', 'ts', 'tsx', 'java', 'c', 'cc', 'cpp', 'h', 'hpp', 'cs', 'go', 'rs', 'rb', 'php', 'swift', 'kt', 'kts', 'scala', 'dart', 'vue', 'svelte', 'ex', 'exs']);
+      const manifestNames = new Set(['package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'requirements.txt', 'pyproject.toml', 'poetry.lock', 'pipfile', 'setup.py', 'cargo.toml', 'cargo.lock', 'go.mod', 'go.sum', 'pom.xml', 'build.gradle', 'build.gradle.kts', 'composer.json', 'gemfile', 'pubspec.yaml', 'mix.exs']);
+      const getExtension = path => {
+        const name = path.split('/').pop() || '';
+        return name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+      };
+      const isSourceFile = path => sourceExtensions.has(getExtension(path));
+      const isTestFile = path => /(^|\/)(tests?|__tests__|specs?)(\/|$)/i.test(path) || /\.(test|spec)\.[^/]+$/i.test(path) || /(^|\/)test_[^/]+/i.test(path) || /_test\.[^/]+$/i.test(path);
+
+      const parseGitHubRepository = value => {
+        try {
+          const url = new URL(value);
+          if (!['github.com', 'www.github.com'].includes(url.hostname.toLowerCase())) return null;
+          const parts = url.pathname.split('/').filter(Boolean);
+          if (parts.length < 2) return null;
+          return {owner: parts[0], name: parts[1].replace(/\.git$/i, '')};
+        } catch {
+          return null;
+        }
+      };
+
+      const githubGet = async (url, fallback) => {
+        const response = await fetch(url, {headers: {'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'}});
+        if (!response.ok) {
+          if (fallback !== undefined && response.status === 409) return fallback;
+          const remaining = response.headers.get('x-ratelimit-remaining');
+          if ((response.status === 403 || response.status === 429) && remaining === '0') throw new Error('GitHub API rate limit reached. Wait for the limit to reset or try again later.');
+          if (response.status === 404) throw new Error('Repository not found. It may be private or the URL may be incorrect.');
+          throw new Error(`GitHub API request failed (${response.status}).`);
+        }
+        return response.json();
+      };
+
+      const buildBasicFindings = ({blobs, sourceFiles, testFiles, manifests, commits, languages, treeTruncated}) => {
+        const languageNames = Object.entries(languages).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+        const topLanguage = languageNames[0] || 'Unknown';
+        const largeSourceFiles = sourceFiles.filter(file => (file.size || 0) >= 150 * 1024).sort((a, b) => (b.size || 0) - (a.size || 0));
+        const areaCounts = new Map();
+        sourceFiles.forEach(file => {
+          const parts = file.path.split('/');
+          const area = parts.length > 1 ? parts[0] : '(repository root)';
+          areaCounts.set(area, (areaCounts.get(area) || 0) + 1);
+        });
+        const topArea = [...areaCounts.entries()].sort((a, b) => b[1] - a[1])[0] || ['(none)', 0];
+
+        const authorCounts = new Map();
+        commits.forEach(commit => {
+          const author = commit.author?.login || commit.commit?.author?.name || 'Unknown author';
+          authorCounts.set(author, (authorCounts.get(author) || 0) + 1);
+        });
+        const authors = [...authorCounts.entries()].sort((a, b) => b[1] - a[1]);
+        const topAuthor = authors[0] || ['No recent author', 0];
+        const topShare = commits.length ? Math.round((topAuthor[1] / commits.length) * 100) : 0;
+
+        const structureFinding = largeSourceFiles.length ? {
+          type: 'File-size observation', severity: 'amber',
+          title: `${largeSourceFiles.length} large source file${largeSourceFiles.length === 1 ? '' : 's'} detected`,
+          path: largeSourceFiles[0].path,
+          proof: `Largest source file is ${formatBytes(largeSourceFiles[0].size || 0)} · threshold 150 KB`,
+          description: 'Large files are not automatically flawed, but size can make review and change planning harder. Basic Scan only uses Git tree metadata here.',
+          conclusion: 'Inspect the largest files manually or use Deep Investigation for function-level complexity and dependency evidence.',
+          proofs: [
+            ['file-code-2', 'Git tree size', `${largeSourceFiles.length} source files meet the 150 KB observation threshold`, `${largeSourceFiles.length} files`],
+            ['file-up', 'Largest source file', largeSourceFiles[0].path, formatBytes(largeSourceFiles[0].size || 0)],
+            ['info', 'Interpretation limit', 'File size alone does not indicate poor code quality', 'Context only']
+          ]
+        } : {
+          type: 'Repository structure', severity: 'blue',
+          title: `${topArea[0]} contains the largest source-code area`,
+          path: topArea[0],
+          proof: `${topArea[1]} of ${sourceFiles.length} detected source files · ${topLanguage} is the primary language`,
+          description: 'This is a structural observation from the live repository tree, not a judgement about quality.',
+          conclusion: 'Use this area as an initial orientation point. Deep Investigation is required to measure complexity or dependency reach.',
+          proofs: [
+            ['folder-tree', 'Largest top-level area', `${topArea[0]} contains the most detected source files`, `${topArea[1]} files`],
+            ['code-2', 'Primary language', 'Calculated from GitHub language bytes', topLanguage],
+            ['files', 'Tree coverage', treeTruncated ? 'GitHub returned a truncated tree' : 'Complete recursive tree returned', `${blobs.length} files`]
+          ]
+        };
+
+        const testFinding = testFiles.length ? {
+          type: 'Test visibility', severity: 'blue',
+          title: `${testFiles.length} test-like file${testFiles.length === 1 ? '' : 's'} detected`,
+          path: testFiles[0].path,
+          proof: `Filename and directory patterns matched across ${sourceFiles.length} source files`,
+          description: 'Basic Scan detects likely tests from paths and names. It does not execute them or calculate coverage.',
+          conclusion: 'Open Change Impact to see name-matched tests for individual files. Use Deep Investigation for real test relationships and failures.',
+          proofs: [
+            ['flask-conical', 'Test path patterns', 'Matched test, tests, spec, __tests__, and common filename forms', `${testFiles.length} files`],
+            ['files', 'Source context', 'Detected source files in the repository tree', `${sourceFiles.length} files`],
+            ['info', 'Interpretation limit', 'Presence does not prove coverage or passing status', 'Not executed']
+          ]
+        } : {
+          type: 'Test visibility', severity: 'amber',
+          title: 'No test files detected from common path patterns',
+          path: 'repository tree',
+          proof: `0 filename matches across ${blobs.length} indexed files`,
+          description: 'The live tree did not match common test directories or filenames. Tests may still exist under project-specific naming.',
+          conclusion: 'Confirm the repository conventions manually before concluding that tests are absent.',
+          proofs: [
+            ['scan-search', 'Path scan', 'Checked common test directories and filename patterns', '0 matches'],
+            ['files', 'Indexed files', treeTruncated ? 'Tree was truncated by GitHub' : 'Complete recursive tree returned', `${blobs.length} files`],
+            ['info', 'Interpretation limit', 'Custom test naming can avoid detection', 'Manual check']
+          ]
+        };
+
+        const dependencyFinding = manifests.length ? {
+          type: 'Dependency surface', severity: 'blue',
+          title: `${manifests.length} dependency manifest${manifests.length === 1 ? '' : 's'} detected`,
+          path: manifests.slice(0, 3).map(file => file.path).join(' · '),
+          proof: 'Common ecosystem manifest and lockfile names matched in the live tree',
+          description: 'Basic Scan identifies dependency entry points but does not read or assess individual package versions.',
+          conclusion: 'These manifests are the starting points for dependency mapping during Deep Investigation.',
+          proofs: [
+            ['package', 'Manifest detection', manifests.map(file => file.path).slice(0, 5).join(', '), `${manifests.length} files`],
+            ['code-2', 'Detected ecosystems', languageNames.slice(0, 4).join(', ') || 'Unknown', `${languageNames.length} languages`],
+            ['info', 'Interpretation limit', 'Package versions and vulnerabilities were not analysed', 'Names only']
+          ]
+        } : {
+          type: 'Dependency surface', severity: 'amber',
+          title: 'No common dependency manifest detected',
+          path: 'repository tree',
+          proof: 'No standard manifest or lockfile name matched',
+          description: 'The project may have no external packages or may use a custom dependency format.',
+          conclusion: 'Confirm the build and dependency conventions manually before drawing conclusions.',
+          proofs: [
+            ['package-x', 'Manifest scan', 'Checked common JavaScript, Python, Java, Go, Rust, PHP, Ruby, Dart, and Elixir files', '0 matches'],
+            ['files', 'Indexed tree', 'Repository files checked by name', `${blobs.length} files`]
+          ]
+        };
+
+        const activityFinding = commits.length ? {
+          type: topShare >= 70 && commits.length >= 10 ? 'Continuity observation' : 'Recent activity', severity: 'blue',
+          title: topShare >= 70 && commits.length >= 10 ? `Recent commits are concentrated around ${topAuthor[0]}` : `Recent commit sample includes ${authors.length} author${authors.length === 1 ? '' : 's'}`,
+          path: `latest ${commits.length} commits`,
+          proof: `${topAuthor[0]} appears in ${topAuthor[1]} of the latest ${commits.length} commits (${topShare}%)`,
+          description: 'This observation uses only the latest commit sample returned by GitHub. It is not a complete ownership analysis or a code-quality judgement.',
+          conclusion: topShare >= 70 && commits.length >= 10 ? 'Treat this as continuity context only. Deep Investigation should analyse file-level ownership across the full history.' : 'Recent work appears distributed in this limited sample. Full-history analysis may produce a different result.',
+          proofs: [
+            ['git-commit-horizontal', 'Commit sample', 'Latest commits returned by GitHub', `${commits.length} commits`],
+            ['users', 'Distinct authors', 'Names or GitHub accounts in the sample', `${authors.length} authors`],
+            ['user-round', 'Most active in sample', topAuthor[0], `${topShare}%`]
+          ]
+        } : {
+          type: 'Recent activity', severity: 'blue',
+          title: 'No recent commit sample was available',
+          path: 'GitHub commits endpoint',
+          proof: 'The repository may be empty or commit history was unavailable',
+          description: 'Basic Scan could not obtain a recent commit sample.',
+          conclusion: 'Repository structure findings remain available, but historical observations require commit data.',
+          proofs: [['git-commit-horizontal', 'Commit sample', 'No commits returned', '0 commits']]
+        };
+
+        return [structureFinding, testFinding, dependencyFinding, activityFinding];
+      };
+
+      const renderToolPlan = ({sourceFiles, testFiles, manifests, commits, topLanguage}) => {
+        const tools = [
+          ['braces', `${topLanguage || 'Source'} static analysis`, sourceFiles.length ? `${sourceFiles.length} source files detected` : 'No supported source files detected', sourceFiles.length > 0],
+          ['git-commit-horizontal', 'History & coupling', commits.length ? `${commits.length} recent commits available` : 'No commit sample available', commits.length > 0],
+          ['network', 'Dependency mapping', manifests.length ? `${manifests.length} manifests detected` : 'No common manifest detected', manifests.length > 0],
+          ['flask-conical', 'Test mapping', testFiles.length ? `${testFiles.length} test-like files detected` : 'No common test paths detected', testFiles.length > 0]
+        ];
+        root.querySelector('#rr-tool-list').innerHTML = tools.map(([icon, name, reason, use]) => `
+          <div class="rr-tool"><span class="rr-tool-icon"><i data-lucide="${icon}" aria-hidden="true"></i></span><div><div class="rr-tool-name">${escapeHtml(name)}</div><div class="rr-tool-reason">${escapeHtml(reason)}</div></div><span class="rr-tool-state ${use ? '' : 'skip'}">${use ? 'Plan' : 'Skip'}</span></div>`).join('');
+      };
+
+      const loadDemoWorkspace = () => {
+        findings = JSON.parse(JSON.stringify(demoFindings));
+        files = JSON.parse(JSON.stringify(demoFiles));
+        currentFile = files[0].path;
+
+        root.querySelector('#rr-side-repo').textContent = 'acme-labs/checkout-service';
+        root.querySelector('#rr-repo-meta').textContent = 'main · Python · seeded demo';
+        root.querySelector('#rr-active-url').textContent = 'https://demo.reporescue.app/acme-labs/checkout-service';
+        root.querySelector('#rr-workspace-mode').innerHTML = '<i data-lucide="database" aria-hidden="true"></i> Demo data';
+        root.querySelector('#rr-files').textContent = '146';
+        root.querySelector('#rr-files-note').textContent = '32 source modules';
+        root.querySelector('#rr-signals').textContent = '18';
+        root.querySelector('#rr-signals-note').textContent = '5 evidence sources connected';
+        root.querySelector('#rr-tests').textContent = '38';
+        root.querySelector('#rr-tests-note').textContent = 'Across 11 modules';
+        root.querySelector('#rr-findings').textContent = findings.length;
+        root.querySelector('#rr-findings-note').textContent = 'Seeded investigation findings';
+        root.querySelector('#rr-findings-chip').textContent = `${findings.length} findings`;
+        root.querySelector('#rr-file-filter').value = '';
+
+        renderConnectedFindings();
+        renderEvidenceList();
+        renderEvidence(0);
+        selectFile(0);
+        renderToolPlan({sourceFiles: new Array(32), testFiles: new Array(38), manifests: new Array(3), commits: new Array(30), topLanguage: 'Python'});
+        showWorkspace();
+        goTo('overview');
+        refreshIcons();
+        showToast('Demo workspace loaded with seeded evidence. No GitHub API request was used.');
+      };
+
+      root.querySelector('#rr-home-demo-launch').addEventListener('click', loadDemoWorkspace);
+
+      const runBasicScan = async (repository) => {
+        const slug = `${repository.owner}/${repository.name}`;
+        const apiBase = `https://api.github.com/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}`;
+        const repoData = await githubGet(apiBase);
+        const [treeData, languages, commits] = await Promise.all([
+          githubGet(`${apiBase}/git/trees/${encodeURIComponent(repoData.default_branch)}?recursive=1`, {tree: [], truncated: false}),
+          githubGet(`${apiBase}/languages`, {}),
+          githubGet(`${apiBase}/commits?per_page=30`, [])
+        ]);
+
+        const blobs = (treeData.tree || []).filter(item => item.type === 'blob');
+        const sourceFiles = blobs.filter(item => isSourceFile(item.path));
+        const testFiles = blobs.filter(item => isTestFile(item.path));
+        const manifests = blobs.filter(item => manifestNames.has((item.path.split('/').pop() || '').toLowerCase()));
+        const languageNames = Object.entries(languages).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+        const topLanguage = languageNames[0] || repoData.language || 'Unknown';
+
+        findings = buildBasicFindings({blobs, sourceFiles, testFiles, manifests, commits, languages, treeTruncated: Boolean(treeData.truncated)});
+        const evidenceSignals = findings.reduce((total, item) => total + item.proofs.length, 0);
+
+        const candidateFiles = blobs.filter(item => isSourceFile(item.path) || isTestFile(item.path) || manifestNames.has((item.path.split('/').pop() || '').toLowerCase())).slice(0, 150);
+        files = (candidateFiles.length ? candidateFiles : blobs.slice(0, 150)).map(item => {
+          const filename = item.path.split('/').pop() || item.path;
+          const stem = filename.replace(/\.[^.]+$/, '').replace(/^(test_|spec_)/i, '').replace(/(_test|_spec|\.test|\.spec)$/i, '');
+          const relatedTests = testFiles.filter(test => test.path !== item.path && test.path.toLowerCase().includes(stem.toLowerCase())).slice(0, 4).map(test => test.path);
+          const extension = getExtension(item.path);
+          return {
+            path: item.path,
+            summary: `Live GitHub tree entry · ${formatBytes(item.size || 0)}${extension ? ` · .${extension} file` : ''}. Basic Scan does not parse dependency calls or Git coupling.`,
+            groups: [
+              ['file-search', 'Basic file facts', [formatBytes(item.size || 0), extension ? `.${extension}` : 'No extension']],
+              ['flask-conical', 'Name-matched tests', relatedTests],
+              ['network', 'Dependency reach', ['Deep Investigation required']],
+              ['git-merge', 'Historical coupling', ['Deep Investigation required']]
+            ]
+          };
+        });
+
+        root.querySelector('#rr-side-repo').textContent = slug;
+        root.querySelector('#rr-repo-meta').textContent = `${repoData.default_branch} · ${topLanguage}`;
+        root.querySelector('#rr-active-url').textContent = `https://github.com/${slug}`;
+        root.querySelector('#rr-workspace-mode').innerHTML = '<i data-lucide="github" aria-hidden="true"></i> Live GitHub data';
+        root.querySelector('#rr-files').textContent = blobs.length.toLocaleString();
+        root.querySelector('#rr-files-note').textContent = `${sourceFiles.length.toLocaleString()} source files${treeData.truncated ? ' · partial tree' : ''}`;
+        root.querySelector('#rr-signals').textContent = evidenceSignals;
+        root.querySelector('#rr-signals-note').textContent = 'Live metadata, tree, languages & commits';
+        root.querySelector('#rr-tests').textContent = testFiles.length.toLocaleString();
+        root.querySelector('#rr-tests-note').textContent = 'Filename/path detection only';
+        root.querySelector('#rr-findings').textContent = findings.length;
+        root.querySelector('#rr-findings-note').textContent = 'Basic-scan observations';
+        root.querySelector('#rr-findings-chip').textContent = `${findings.length} findings`;
+
+        renderConnectedFindings();
+        renderEvidenceList();
+        renderEvidence(0);
+        renderToolPlan({sourceFiles, testFiles, manifests, commits, topLanguage});
+        currentFile = files[0]?.path || '';
+        root.querySelector('#rr-file-filter').value = '';
+        if (files.length) selectFile(0);
+        else renderFileList();
+        refreshIcons();
+        return {slug, files: blobs.length};
+      };
+
+      const startBasicScan = async (input, button) => {
+        const value = input.value.trim();
+        const repository = parseGitHubRepository(value);
+        if (!repository) {
+          showToast('Enter a valid public GitHub repository URL.');
+          input.focus();
+          return;
+        }
+        button.disabled = true;
+        button.innerHTML = '<i class="rr-spin" data-lucide="loader-circle" aria-hidden="true"></i> Reading GitHub…';
+        refreshIcons();
+        try {
+          const result = await runBasicScan(repository);
+          root.querySelector('#rr-home-repo-url').value = value;
+          showWorkspace();
+          goTo('overview');
+          button.innerHTML = '<i data-lucide="check" aria-hidden="true"></i> Scan complete';
+          showToast(`Live basic scan completed for ${result.slug}: ${result.files.toLocaleString()} files indexed.`);
+        } catch (error) {
+          button.innerHTML = '<i data-lucide="circle-alert" aria-hidden="true"></i> Scan failed';
+          showToast(error.message || 'The repository could not be scanned.');
+        } finally {
+          button.disabled = false;
+          refreshIcons();
+        }
+      };
+
+      root.querySelector('#rr-home-scan-btn').addEventListener('click', () => startBasicScan(root.querySelector('#rr-home-repo-url'), root.querySelector('#rr-home-scan-btn')));
+      root.querySelector('#rr-home-repo-url').addEventListener('keydown', event => {
+        if (event.key === 'Enter') startBasicScan(root.querySelector('#rr-home-repo-url'), root.querySelector('#rr-home-scan-btn'));
+      });
+      root.querySelector('[data-action="home"]').addEventListener('click', () => showHome('demo'));
+
+      refreshIcons();
+    })();
+  </script>
+</div>
+</body>
+</html>

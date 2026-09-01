@@ -1,0 +1,15 @@
+{
+  "name": "repo-rescue-dashboard",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Interactive frontend prototype for the RepoRescue agentic repository investigation platform",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
